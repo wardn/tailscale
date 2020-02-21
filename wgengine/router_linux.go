@@ -154,6 +154,7 @@ func (r *linuxRouter) SetRoutes(rs RouteSettings) error {
 		if err := replaceResolvConf(rs.DNS, rs.DNSDomains, r.logf); err != nil {
 			errq = fmt.Errorf("replacing resolv.conf failed: %v", err)
 		}
+		restartSystemd(r.logf)
 	}
 	return errq
 }
@@ -166,6 +167,14 @@ func (r *linuxRouter) Close() error {
 			ret = err
 		}
 	}
+	restartSystemd(logf)
 	// TODO(apenwarr): clean up iptables etc.
 	return ret
+}
+
+func restartSystemd(logf logger.Logf) {
+	out, _ := exec.Command("service", "systemd-resolved", "restart").CombinedOutput()
+	if len(out) > 0 {
+		logf("service systemd-resolved restart: %s", out)
+	}
 }

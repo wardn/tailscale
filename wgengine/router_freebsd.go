@@ -131,7 +131,7 @@ func (r *freebsdRouter) SetRoutes(rs RouteSettings) error {
 	r.local = rs.LocalAddr
 	r.routes = newRoutes
 
-	if err := r.replaceResolvConf(rs.DNS, rs.DNSDomains); err != nil {
+	if err := replaceResolvConf(rs.DNS, rs.DNSDomains, r.logf); err != nil {
 		errq = fmt.Errorf("replacing resolv.conf failed: %v", err)
 	}
 
@@ -144,14 +144,9 @@ func (r *freebsdRouter) Close() error {
 		r.logf("running ifconfig failed: %v\n%s", err, out)
 	}
 
-	if err := r.restoreResolvConf(); err != nil {
+	if err := restoreResolvConf(r.logf); err != nil {
 		r.logf("failed to restore system resolv.conf: %v", err)
 	}
 
 	return nil
 }
-
-// TODO(mbaillie): these are no-ops for now. They could re-use the Linux funcs
-// (sans systemd parts), but I note Linux DNS is disabled(?) so leaving for now.
-func (r *freebsdRouter) replaceResolvConf(_ []wgcfg.IP, _ []string) error { return nil }
-func (r *freebsdRouter) restoreResolvConf() error                         { return nil }

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -83,11 +82,6 @@ func replaceResolvConf(servers []wgcfg.IP, domains []string, logf logger.Logf) e
 	if err := os.Symlink(tsConf, resolvConf); err != nil {
 		return nil
 	}
-
-	out, _ := exec.Command("service", "systemd-resolved", "restart").CombinedOutput()
-	if len(out) > 0 {
-		logf("service systemd-resolved restart: %s", out)
-	}
 	return nil
 }
 
@@ -107,9 +101,5 @@ func restoreResolvConf(logf logger.Logf) error {
 		return err
 	}
 	os.Remove(tsConf) // best effort removal of tsConf file
-	out, _ := exec.Command("service", "systemd-resolved", "restart").CombinedOutput()
-	if len(out) > 0 {
-		logf("service systemd-resolved restart: %s", out)
-	}
 	return nil
 }
